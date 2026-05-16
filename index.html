@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
+
 body{
     font-family: Arial, sans-serif;
     background:#f5f5f5;
@@ -43,7 +43,8 @@ label{
     font-weight:bold;
 }
 
-input, textarea{
+input,
+textarea{
     width:100%;
     padding:12px;
     border-radius:10px;
@@ -88,7 +89,13 @@ textarea{
     font-size:13px;
     color:#666;
 }
+
+.red{
+    color:red;
+}
+
 </style>
+
 </head>
 
 <body>
@@ -98,49 +105,82 @@ textarea{
 <h1>Dragon Fort Delivery SMS</h1>
 
 <div class="section">
-    <label>Select Order Photo</label>
 
-    <input
-        type="file"
-        id="imageInput"
-        accept="image/*"
-        capture="environment"
-    >
+<label>Select Order Photo</label>
 
-    <img id="preview" class="preview" style="display:none;">
+<input
+    type="file"
+    id="imageInput"
+    accept="image/*"
+    capture="environment"
+>
 
-    <div class="status" id="status"></div>
+<img
+    id="preview"
+    class="preview"
+    style="display:none;"
+>
+
+<div
+    class="status"
+    id="status">
 </div>
-
-<div class="section">
-
-    <label>Phone Number</label>
-    <input type="text" id="phone">
-
-    <label>Order Total</label>
-    <input type="text" id="total">
-
-    <label>Delivery Fee</label>
-    <input type="text" id="delivery">
-
-    <label>Estimated Arrival Time (minutes)</label>
-    <input type="text" id="minutes" value="20">
 
 </div>
 
 <div class="section">
 
-    <button onclick="generateMessage()">
-        Generate Message
-    </button>
+<label>Phone Number</label>
 
-    <label>Generated Message</label>
+<input
+    type="text"
+    id="phone"
+>
 
-    <textarea id="message"></textarea>
+<label>Order Total</label>
 
-    <button onclick="sendSMS()">
-        Send via Messages
-    </button>
+<input
+    type="text"
+    id="total"
+>
+
+<label>Delivery Fee</label>
+
+<input
+    type="text"
+    id="delivery"
+>
+
+<label class="red">
+    Estimated Arrival Time (minutes)
+    - Manual Input Required
+</label>
+
+<input
+    type="text"
+    id="minutes"
+    value="20"
+>
+
+</div>
+
+<div class="section">
+
+<button onclick="generateMessage()">
+    Generate Message
+</button>
+
+<button onclick="resetForm()">
+    Reset
+</button>
+
+<label>Generated Message</label>
+
+<textarea id="message"></textarea>
+
+<button onclick="sendSMS()">
+    Send via Messages
+</button>
 
 </div>
 
@@ -152,45 +192,61 @@ textarea{
 
 <script>
 
-const imageInput = document.getElementById('imageInput');
-const preview = document.getElementById('preview');
-const statusText = document.getElementById('status');
+const imageInput =
+    document.getElementById('imageInput');
 
-imageInput.addEventListener('change', async function(e){
+const preview =
+    document.getElementById('preview');
+
+const statusText =
+    document.getElementById('status');
+
+imageInput.addEventListener(
+    'change',
+    async function(e){
 
     const file = e.target.files[0];
 
     if(!file) return;
 
-    preview.src = URL.createObjectURL(file);
+    preview.src =
+        URL.createObjectURL(file);
+
     preview.style.display = 'block';
 
-    statusText.innerText = 'Reading image...';
+    statusText.innerText =
+        'Reading image...';
 
     try{
 
-        const compressedImage = await compressImage(file);
+        const compressedImage =
+            await compressImage(file);
 
-        statusText.innerText = 'Running OCR...';
+        statusText.innerText =
+            'Running OCR...';
 
-        const result = await Tesseract.recognize(
-            compressedImage,
-            'eng'
-        );
+        const result =
+            await Tesseract.recognize(
+                compressedImage,
+                'eng'
+            );
 
-        const text = result.data.text;
+        const text =
+            result.data.text;
 
         console.log(text);
 
         parseOrder(text);
 
-        statusText.innerText = 'OCR completed. Please verify the fields.';
+        statusText.innerText =
+            'OCR completed. Please verify the fields.';
 
     }catch(err){
 
         console.error(err);
 
-        statusText.innerText = 'OCR failed. Please fill manually.';
+        statusText.innerText =
+            'OCR failed. Please fill manually.';
     }
 
 });
@@ -203,7 +259,8 @@ async function compressImage(file){
 
         img.onload = ()=>{
 
-            const canvas = document.createElement('canvas');
+            const canvas =
+                document.createElement('canvas');
 
             const MAX_WIDTH = 1200;
 
@@ -213,23 +270,34 @@ async function compressImage(file){
             if(width > MAX_WIDTH){
 
                 height *= MAX_WIDTH / width;
+
                 width = MAX_WIDTH;
             }
 
             canvas.width = width;
             canvas.height = height;
 
-            const ctx = canvas.getContext('2d');
+            const ctx =
+                canvas.getContext('2d');
 
-            ctx.drawImage(img,0,0,width,height);
+            ctx.drawImage(
+                img,
+                0,
+                0,
+                width,
+                height
+            );
 
             canvas.toBlob((blob)=>{
+
                 resolve(blob);
+
             },'image/jpeg',0.8);
 
         };
 
-        img.src = URL.createObjectURL(file);
+        img.src =
+            URL.createObjectURL(file);
 
     });
 
@@ -237,7 +305,8 @@ async function compressImage(file){
 
 function parseOrder(text){
 
-    const cleanText = text.replace(/\n/g,' ');
+    const cleanText =
+        text.replace(/\n/g,' ');
 
     console.log(cleanText);
 
@@ -245,101 +314,97 @@ function parseOrder(text){
     let total = '';
     let delivery = '';
 
-    // =========================
-    // Detect order type
-    // =========================
-
     const isPhoneOrder =
         cleanText.includes('AMOUNT');
 
     const isOnlineOrder =
         cleanText.includes('Order Total');
 
-    // =========================
-    // PHONE NUMBER
-    // =========================
-
-    // Format:
-    // Tel#2368875765
-
     let phoneMatch =
-        cleanText.match(/Tel#?\s*(\d{10})/i);
+        cleanText.match(
+            /Tel#?\s*(\d{10})/i
+        );
 
     if(phoneMatch){
 
-        phone = formatPhone(phoneMatch[1]);
+        phone =
+            formatPhone(phoneMatch[1]);
 
     }else{
 
-        // Alternative format
         let altPhone =
-            cleanText.match(/(\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4})/);
+            cleanText.match(
+                /Tel\s*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/i
+            );
 
         if(altPhone){
 
-            phone = altPhone[1];
+            phone =
+            `(${altPhone[1]}) ${altPhone[2]}-${altPhone[3]}`;
         }
-    }
 
-    // =========================
-    // PHONE ORDER
-    // =========================
+    }
 
     if(isPhoneOrder){
 
-        // AMOUNT 133.06
-
         let totalMatch =
-            cleanText.match(/AMOUNT\s*\$?\s*(\d+\.\d{2})/i);
+            cleanText.match(
+                /AMOUNT\s+(\d+\.\d{2})/i
+            );
 
         if(totalMatch){
 
-            total = totalMatch[1];
+            total =
+                totalMatch[1];
         }
 
-        // Delivery ... 12.75
-
         let deliveryMatch =
-            cleanText.match(/Delivery.*?(\d+\.\d{2})/i);
+            cleanText.match(
+                /Delivery.*?\[.*?km.*?\]\s*(\d+\.\d{2})/i
+            );
 
         if(deliveryMatch){
 
-            delivery = deliveryMatch[1];
+            delivery =
+                deliveryMatch[1];
         }
 
     }
-
-    // =========================
-    // ONLINE ORDER
-    // =========================
 
     if(isOnlineOrder){
 
-        // Order Total 24.76
-
         let totalMatch =
-            cleanText.match(/Order Total\s*\$?\s*(\d+\.\d{2})/i);
+            cleanText.match(
+                /Order Total\s*\$?(\d+\.\d{2})/i
+            );
 
         if(totalMatch){
 
-            total = totalMatch[1];
+            total =
+                totalMatch[1];
         }
 
-        // Delivery Fee 4.00
-
         let deliveryMatch =
-            cleanText.match(/Delivery Fee.*?(\d+\.\d{2})/i);
+            cleanText.match(
+                /Delivery Fee.*?\$?(\d+\.\d{2})/i
+            );
 
         if(deliveryMatch){
 
-            delivery = deliveryMatch[1];
+            delivery =
+                deliveryMatch[1];
         }
 
     }
 
-    document.getElementById('phone').value = phone;
-    document.getElementById('total').value = total;
-    document.getElementById('delivery').value = delivery;
+    document.getElementById('phone').value =
+        phone;
+
+    document.getElementById('total').value =
+        total;
+
+    document.getElementById('delivery').value =
+        delivery;
 
 }
 
@@ -371,15 +436,37 @@ If you have any questions about your order, please contact the restaurant at 604
 
 Thank you, and see you soon!`;
 
-    document.getElementById('message').value = msg;
+    document.getElementById('message').value =
+        msg;
+
+}
+
+function resetForm(){
+
+    document.getElementById('phone').value = '';
+
+    document.getElementById('total').value = '';
+
+    document.getElementById('delivery').value = '';
+
+    document.getElementById('minutes').value = '20';
+
+    document.getElementById('message').value = '';
+
+    document.getElementById('imageInput').value = '';
+
+    preview.style.display = 'none';
+
+    statusText.innerText = '';
 
 }
 
 function sendSMS(){
 
     const phone =
-        document.getElementById('phone').value
-            .replace(/\D/g,'');
+        document.getElementById('phone')
+        .value
+        .replace(/\D/g,'');
 
     const message =
         document.getElementById('message').value;
@@ -387,24 +474,27 @@ function sendSMS(){
     if(!phone){
 
         alert('Phone number missing.');
+
         return;
     }
 
     if(!message){
 
         alert('Please generate the message first.');
+
         return;
     }
 
     const smsURL =
-        `sms:${phone}&body=${encodeURIComponent(message)}`;
+`sms:${phone}&body=${encodeURIComponent(message)}`;
 
-    window.location.href = smsURL;
+    window.location.href =
+        smsURL;
 
 }
 
 </script>
 
 </body>
+
 </html>
-```
