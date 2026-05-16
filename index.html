@@ -115,10 +115,15 @@ textarea{
     capture="environment"
 >
 
+<button onclick="resetForm()">
+    Reset
+</button>
+
 <img
     id="preview"
     class="preview"
     style="display:none;"
+    src=""
 >
 
 <div
@@ -159,7 +164,7 @@ textarea{
 <input
     type="text"
     id="minutes"
-    value="20"
+    value="15"
 >
 
 </div>
@@ -168,10 +173,6 @@ textarea{
 
 <button onclick="generateMessage()">
     Generate Message
-</button>
-
-<button onclick="resetForm()">
-    Reset
 </button>
 
 <label>Generated Message</label>
@@ -386,7 +387,7 @@ function parseOrder(text){
 
         let deliveryMatch =
             cleanText.match(
-                /Delivery Fee.*?\$?(\d+\.\d{2})/i
+                /Delivery Fee\s*\(.*?km\)\s*\$?(\d+\.\d{2})/i
             );
 
         if(deliveryMatch){
@@ -449,7 +450,7 @@ function resetForm(){
 
     document.getElementById('delivery').value = '';
 
-    document.getElementById('minutes').value = '20';
+    document.getElementById('minutes').value = '15';
 
     document.getElementById('message').value = '';
 
