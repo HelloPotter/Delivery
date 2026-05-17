@@ -3,36 +3,66 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Delivery SMS 1.5</title>
+<title>Stone Delivery SMS Tool v2.0</title>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
+
 body{
     font-family:Arial,sans-serif;
     background:#f5f5f5;
     margin:0;
     padding:20px;
 }
+
 .container{
     max-width:760px;
     margin:auto;
     background:white;
     padding:20px;
-    border-radius:16px;
+    border-radius:18px;
     box-shadow:0 4px 20px rgba(0,0,0,0.1);
 }
+
+.logo{
+    width:90px;
+    height:90px;
+    margin:0 auto 15px;
+    border-radius:50%;
+    background:black;
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:30px;
+    font-weight:bold;
+}
+
 h1{
     text-align:center;
+    margin:0;
+    font-size:28px;
 }
+
+.version{
+    text-align:center;
+    color:#777;
+    margin-top:6px;
+    margin-bottom:25px;
+    font-size:15px;
+}
+
 .button-row{
     display:flex;
     gap:10px;
     margin-top:10px;
 }
+
 .button-row button{
     flex:1;
 }
+
 button{
     border:none;
     border-radius:12px;
@@ -40,13 +70,16 @@ button{
     color:white;
     padding:14px;
     font-size:16px;
+    cursor:pointer;
 }
+
 label{
     display:block;
     margin-top:16px;
     margin-bottom:6px;
     font-weight:bold;
 }
+
 input,textarea{
     width:100%;
     box-sizing:border-box;
@@ -56,24 +89,30 @@ input,textarea{
     font-size:20px;
     font-weight:bold;
 }
+
 textarea{
     min-height:220px;
 }
+
 .preview{
     width:100%;
     margin-top:15px;
     border-radius:12px;
 }
+
 .hidden{
     display:none;
 }
+
 .status{
     margin-top:10px;
     color:#666;
 }
+
 .red{
     color:red;
 }
+
 </style>
 </head>
 
@@ -81,20 +120,49 @@ textarea{
 
 <div class="container">
 
-<h1>Delivery SMS V1.5</h1>
+<div class="logo">SDS</div>
+
+<h1>Stone Delivery SMS Tool</h1>
+
+<div class="version">Version 2.0</div>
 
 <label>Order Photo</label>
 
 <div class="button-row">
-<button onclick="document.getElementById('cameraInput').click()">Scan Order</button>
-<button onclick="openPhotoLibrary()">Upload Photo</button>
-<button onclick="resetForm()">Reset</button>
+<button onclick="document.getElementById('cameraInput').click()">
+Scan Order
+</button>
+
+<button onclick="openPhotoLibrary()">
+Upload Photo
+</button>
+
+<button onclick="resetForm()">
+Reset
+</button>
 </div>
 
-<input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden">
-<input type="file" id="uploadInput" accept="image/*" class="hidden">
+<input
+type="file"
+id="cameraInput"
+accept="image/*"
+capture="environment"
+class="hidden"
+>
 
-<img id="preview" class="preview" style="display:none;" src="">
+<input
+type="file"
+id="uploadInput"
+accept="image/*"
+class="hidden"
+>
+
+<img
+id="preview"
+class="preview"
+style="display:none;"
+src=""
+>
 
 <div class="status" id="status"></div>
 
@@ -105,8 +173,15 @@ textarea{
 <input type="text" id="address">
 
 <div class="button-row">
-<button onclick="copyAddress()">Copy Address</button>
-<button onclick="navigateAddress()">Navigate</button>
+
+<button id="copyBtn" onclick="copyAddress()">
+Copy Address
+</button>
+
+<button onclick="navigateAddress()">
+Navigate
+</button>
+
 </div>
 
 <label>Order Total</label>
@@ -115,25 +190,46 @@ textarea{
 <label>Delivery Fee</label>
 <input type="text" id="delivery">
 
-<label class="red">Estimated Arrival Time (minutes)</label>
+<label class="red">
+Estimated Arrival Time (minutes)
+</label>
+
 <input type="text" id="minutes" value="15">
 
-<button style="width:100%;margin-top:20px;" onclick="generateMessage()">Generate Message</button>
+<button
+style="width:100%;margin-top:20px;"
+onclick="generateMessage()"
+>
+Generate Message
+</button>
 
 <label>Generated Message</label>
+
 <textarea id="message"></textarea>
 
-<button style="width:100%;margin-top:15px;" onclick="sendSMS()">Send via Messages</button>
+<button
+style="width:100%;margin-top:15px;"
+onclick="sendSMS()"
+>
+Send via Messages
+</button>
 
 </div>
 
 <script>
 
-const preview=document.getElementById('preview');
-const statusText=document.getElementById('status');
+const preview =
+document.getElementById('preview');
+
+const statusText =
+document.getElementById('status');
 
 function openPhotoLibrary(){
-    document.getElementById('uploadInput').click();
+
+    const input =
+    document.getElementById('uploadInput');
+
+    input.click();
 }
 
 [
@@ -141,29 +237,41 @@ function openPhotoLibrary(){
  document.getElementById('uploadInput')
 ].forEach(input=>{
 
-    input.addEventListener('change',async function(e){
+    input.addEventListener(
+    'change',
+    async function(e){
 
         const file=e.target.files[0];
+
         if(!file)return;
 
-        preview.src=URL.createObjectURL(file);
+        preview.src=
+        URL.createObjectURL(file);
+
         preview.style.display='block';
 
-        statusText.innerText='Running OCR...';
+        statusText.innerText=
+        'Running OCR...';
 
         try{
 
-            const result=await Tesseract.recognize(file,'eng');
+            const result=
+            await Tesseract.recognize(
+                file,
+                'eng'
+            );
 
             parseOrder(result.data.text);
 
-            statusText.innerText='OCR completed.';
+            statusText.innerText=
+            'OCR completed.';
 
         }catch(err){
 
             console.error(err);
 
-            statusText.innerText='OCR failed.';
+            statusText.innerText=
+            'OCR failed.';
         }
 
     });
@@ -192,7 +300,8 @@ function cleanAddress(address){
 
 function parseOrder(text){
 
-    const cleanText=text.replace(/\n/g,' ');
+    const cleanText=
+    text.replace(/\n/g,' ');
 
     let phone='';
     let address='';
@@ -200,34 +309,40 @@ function parseOrder(text){
     let delivery='';
     let km=0;
 
-    const isPhoneOrder=cleanText.includes('AMOUNT');
-    const isOnlineOrder=cleanText.includes('Order Total');
+    const isPhoneOrder=
+    cleanText.includes('AMOUNT');
 
-    // ONLINE ORDER PHONE
-    let onlinePhone=cleanText.match(
+    const isOnlineOrder=
+    cleanText.includes('Order Total');
+
+    let onlinePhone=
+    cleanText.match(
         /Tel\s*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/i
     );
 
     if(onlinePhone){
 
-        phone=`(${onlinePhone[1]}) ${onlinePhone[2]}-${onlinePhone[3]}`;
+        phone=
+        `(${onlinePhone[1]}) ${onlinePhone[2]}-${onlinePhone[3]}`;
 
     }else{
 
-        // PHONE ORDER PHONE
-        let phoneMatch=cleanText.match(
+        let phoneMatch=
+        cleanText.match(
             /Tel#?\s*(\d{10})/i
         );
 
         if(phoneMatch){
-            phone=formatPhone(phoneMatch[1]);
+
+            phone=
+            formatPhone(phoneMatch[1]);
         }
     }
 
-    // PHONE ORDER
     if(isPhoneOrder){
 
-        let totalMatch=cleanText.match(
+        let totalMatch=
+        cleanText.match(
             /AMOUNT\s+(\d+\.\d{2})/i
         );
 
@@ -235,10 +350,8 @@ function parseOrder(text){
             total=totalMatch[1];
         }
 
-        // PHONE ORDER DELIVERY FEE
-        // Delivery 1-12 [10 km]          12.75
-
-        let deliveryMatch=cleanText.match(
+        let deliveryMatch=
+        cleanText.match(
             /Delivery.*?\[\s*\d+\s*km\s*\]\s+(\d+\.\d{2})/i
         );
 
@@ -246,8 +359,8 @@ function parseOrder(text){
             delivery=deliveryMatch[1];
         }
 
-        // PHONE ORDER KM
-        let kmMatch=cleanText.match(
+        let kmMatch=
+        cleanText.match(
             /\[(\d+)\s*km\]/i
         );
 
@@ -255,25 +368,27 @@ function parseOrder(text){
             km=parseFloat(kmMatch[1]);
         }
 
-        // PHONE ORDER ADDRESS
-        let addressMatch=cleanText.match(
+        let addressMatch=
+        cleanText.match(
             /Tel#?\d{10}\s*(.*?)\s*Dragon Fort Restaurant/i
         );
 
         if(addressMatch){
 
-            address=cleanAddress(addressMatch[1]);
+            address=
+            cleanAddress(addressMatch[1]);
 
             if(!address.includes('BC')){
+
                 address+=', Abbotsford, BC';
             }
         }
     }
 
-    // ONLINE ORDER
     if(isOnlineOrder){
 
-        let totalMatch=cleanText.match(
+        let totalMatch=
+        cleanText.match(
             /Order Total\s*\$?(\d+\.\d{2})/i
         );
 
@@ -281,10 +396,8 @@ function parseOrder(text){
             total=totalMatch[1];
         }
 
-        // ONLINE ORDER DELIVERY FEE
-        // Delivery Fee (2.94km)      $4.00
-
-        let deliveryMatch=cleanText.match(
+        let deliveryMatch=
+        cleanText.match(
             /Delivery Fee\s*\([\d.]+km\)\s+\$?(\d+\.\d{2})/i
         );
 
@@ -292,8 +405,8 @@ function parseOrder(text){
             delivery=deliveryMatch[1];
         }
 
-        // ONLINE ORDER KM
-        let kmMatch=cleanText.match(
+        let kmMatch=
+        cleanText.match(
             /Delivery Fee\s*\(([\d.]+)km\)/i
         );
 
@@ -301,8 +414,8 @@ function parseOrder(text){
             km=parseFloat(kmMatch[1]);
         }
 
-        // ONLINE ORDER ADDRESS
-        let addressMatch=cleanText.match(
+        let addressMatch=
+        cleanText.match(
             /Addr\.\s*(.*?)\s*[A-Z]\d[A-Z]\d[A-Z]\d/i
         );
 
@@ -316,20 +429,26 @@ function parseOrder(text){
     document.getElementById('total').value=total;
     document.getElementById('delivery').value=delivery;
     document.getElementById('minutes').value=estimateMinutes(km);
-
 }
 
 function formatPhone(num){
+
     return `(${num.slice(0,3)}) ${num.slice(3,6)}-${num.slice(6)}`;
 }
 
 function generateMessage(){
 
-    const total=document.getElementById('total').value;
-    const delivery=document.getElementById('delivery').value;
-    const minutes=document.getElementById('minutes').value;
+    const total=
+    document.getElementById('total').value;
 
-    const msg=`Hi, this is Stone, your delivery driver from Dragon Fort.
+    const delivery=
+    document.getElementById('delivery').value;
+
+    const minutes=
+    document.getElementById('minutes').value;
+
+    const msg=
+`Hi, this is Stone, your delivery driver from Dragon Fort.
 
 Your order has just left the restaurant and should arrive in about ${minutes} minutes.
 
@@ -344,28 +463,38 @@ Thank you, and see you soon!`;
 
 function copyAddress(){
 
-    const address=document.getElementById('address').value;
+    const address=
+    document.getElementById('address').value;
 
     navigator.clipboard.writeText(address);
+
+    document.getElementById('copyBtn').innerText=
+    'Address Copied';
 }
 
 function navigateAddress(){
 
-    const address=document.getElementById('address').value;
+    const address=
+    document.getElementById('address').value;
 
     window.open(
-        `http://maps.apple.com/?daddr=${encodeURIComponent(address)}`,
-        '_blank'
+    `http://maps.apple.com/?daddr=${encodeURIComponent(address)}`,
+    '_blank'
     );
 }
 
 function resetForm(){
 
-    ['phone','address','total','delivery','message'].forEach(id=>{
+    ['phone','address','total','delivery','message']
+    .forEach(id=>{
+
         document.getElementById(id).value='';
     });
 
     document.getElementById('minutes').value='15';
+
+    document.getElementById('copyBtn').innerText=
+    'Copy Address';
 
     preview.style.display='none';
 
@@ -374,11 +503,13 @@ function resetForm(){
 
 function sendSMS(){
 
-    const phone=document.getElementById('phone')
+    const phone=
+    document.getElementById('phone')
     .value
     .replace(/\D/g,'');
 
-    const message=document.getElementById('message').value;
+    const message=
+    document.getElementById('message').value;
 
     if(!phone || !message)return;
 
