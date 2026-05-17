@@ -235,14 +235,18 @@ function parseOrder(text){
             total=totalMatch[1];
         }
 
+        // PHONE ORDER DELIVERY FEE
+        // Delivery 1-12 [10 km]          12.75
+
         let deliveryMatch=cleanText.match(
-            /Delivery.*?\[.*?km.*?\]\s*(\d+\.\d{2})/i
+            /Delivery.*?\[\s*\d+\s*km\s*\]\s+(\d+\.\d{2})/i
         );
 
         if(deliveryMatch){
             delivery=deliveryMatch[1];
         }
 
+        // PHONE ORDER KM
         let kmMatch=cleanText.match(
             /\[(\d+)\s*km\]/i
         );
@@ -251,6 +255,7 @@ function parseOrder(text){
             km=parseFloat(kmMatch[1]);
         }
 
+        // PHONE ORDER ADDRESS
         let addressMatch=cleanText.match(
             /Tel#?\d{10}\s*(.*?)\s*Dragon Fort Restaurant/i
         );
@@ -276,14 +281,18 @@ function parseOrder(text){
             total=totalMatch[1];
         }
 
+        // ONLINE ORDER DELIVERY FEE
+        // Delivery Fee (2.94km)      $4.00
+
         let deliveryMatch=cleanText.match(
-            /Delivery Fee.*?\$?(\d+\.\d{2})/i
+            /Delivery Fee\s*\([\d.]+km\)\s+\$?(\d+\.\d{2})/i
         );
 
         if(deliveryMatch){
             delivery=deliveryMatch[1];
         }
 
+        // ONLINE ORDER KM
         let kmMatch=cleanText.match(
             /Delivery Fee\s*\(([\d.]+)km\)/i
         );
@@ -292,6 +301,7 @@ function parseOrder(text){
             km=parseFloat(kmMatch[1]);
         }
 
+        // ONLINE ORDER ADDRESS
         let addressMatch=cleanText.match(
             /Addr\.\s*(.*?)\s*[A-Z]\d[A-Z]\d[A-Z]\d/i
         );
