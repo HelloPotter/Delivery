@@ -112,7 +112,7 @@ textarea{
 
 <div class="button-row">
 <button onclick="document.getElementById('cameraInput').click()">Scan Order</button>
-<button onclick="document.getElementById('uploadInput').click()">Upload Photo</button>
+<button onclick="openPhotoLibrary()">Upload Photo</button>
 <button onclick="resetForm()">Reset</button>
 </div>
 
@@ -160,6 +160,15 @@ OCR works best with clear and straight photos.
 
 const preview = document.getElementById('preview');
 const statusText = document.getElementById('status');
+
+function openPhotoLibrary(){
+
+    const input = document.getElementById('uploadInput');
+
+    input.removeAttribute('capture');
+
+    input.click();
+}
 
 const fileInputs = [
     document.getElementById('cameraInput'),
@@ -232,7 +241,7 @@ function parseOrder(text){
     }else{
 
         let altPhone = clean.match(
-            /Tel\s*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/i
+            /Tel\s*\(?(\\d{3})\)?[-.\s]?(\\d{3})[-.\s]?(\\d{4})/i
         );
 
         if(altPhone){
@@ -345,8 +354,6 @@ function copyAddress(){
     const address = document.getElementById('address').value;
 
     navigator.clipboard.writeText(address);
-
-    alert('Address copied.');
 }
 
 function navigateAddress(){
@@ -385,12 +392,10 @@ function sendSMS(){
     const message = document.getElementById('message').value;
 
     if(!phone){
-        alert('Phone number missing.');
         return;
     }
 
     if(!message){
-        alert('Please generate the message first.');
         return;
     }
 
