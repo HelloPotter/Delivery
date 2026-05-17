@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dragon Fort Delivery SMS</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f5f5f5;
+    margin:0;
+    padding:20px;
+}
+
+.container{
+    max-width:760px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:16px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.1);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.button-row{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+}
+
+.button-row button{
+    flex:1;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    background:black;
+    color:white;
+    padding:14px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:0.9;
+}
+
+label{
+    display:block;
+    margin-top:16px;
+    margin-bottom:6px;
+    font-weight:bold;
+}
+
+input, textarea{
+    width:100%;
+    box-sizing:border-box;
+    padding:14px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    font-size:20px;
+    font-weight:bold;
+}
+
+textarea{
+    min-height:220px;
+}
+
+.preview{
+    width:100%;
+    margin-top:15px;
+    border-radius:12px;
+}
+
+.hidden{
+    display:none;
+}
+
+.status{
+    margin-top:10px;
+    color:#666;
+}
+
+.red{
+    color:red;
+}
+
+.small{
+    margin-top:15px;
+    font-size:13px;
+    color:#666;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Dragon Fort Delivery SMS</h1>
+
+<label>Order Photo</label>
+
+<div class="button-row">
+<button onclick="document.getElementById('cameraInput').click()">Scan Order</button>
+<button onclick="document.getElementById('uploadInput').click()">Upload Photo</button>
+<button onclick="resetForm()">Reset</button>
+</div>
+
+<input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden">
+<input type="file" id="uploadInput" accept="image/*" class="hidden">
+
+<img id="preview" class="preview" style="display:none;" src="">
+
+<div class="status" id="status"></div>
+
+<label>Phone Number</label>
+<input type="text" id="phone">
+
+<label>Address</label>
+<input type="text" id="address">
+
+<div class="button-row">
+<button onclick="copyAddress()">Copy Address</button>
+<button onclick="navigateAddress()">Navigate</button>
+</div>
+
+<label>Order Total</label>
+<input type="text" id="total">
+
+<label>Delivery Fee</label>
+<input type="text" id="delivery">
+
+<label class="red">Estimated Arrival Time (minutes)</label>
+<input type="text" id="minutes" value="15">
+
+<button style="width:100%; margin-top:20px;" onclick="generateMessage()">Generate Message</button>
+
+<label>Generated Message</label>
+<textarea id="message"></textarea>
+
+<button style="width:100%; margin-top:15px;" onclick="sendSMS()">Send via Messages</button>
+
+<div class="small">
+OCR works best with clear and straight photos.
+</div>
+
+</div>
+
+<script>
+
+const preview = document.getElementById('preview');
+const statusText = document.getElementById('status');
+
+const fileInputs = [
+    document.getElementById('cameraInput'),
+    document.getElementById('uploadInput')
+];
+
+fileInputs.forEach(input => {
+
+    input.addEventListener('change', async function(e){
+
+        const file = e.target.files[0];
+
+        if(!file) return;
+
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+
+        statusText.innerText = 'Running OCR...';
+
+        try{
+
+            const result = await Tesseract.recognize(
+                file,
+                'eng'
+            );
+
+            parseOrder(result.data.text);
+
+            statusText.innerText = 'OCR completed.';
+
+        }catch(err){
+
+            console.error(err);
+
+            statusText.innerText = 'OCR failed.';
+        }
+
+    });
+
+});
+
+function estimateMinutes(km){
+
+    if(km <= 3){
+        return 5;
+    }
+
+    return 5 + Math.ceil((km - 3) / 2);
+}
+
+function parseOrder(text){
+
+    const clean = text.replace(/\n/g,' ');
+
+    let phone = '';
+    let address = '';
+    let total = '';
+    let delivery = '';
+    let km = 0;
+
+    const isPhoneOrder = clean.includes('AMOUNT');
+    const isOnlineOrder = clean.includes('Order Total');
+
+    let phoneMatch = clean.match(/Tel#?\s*(\d{10})/i);
+
+    if(phoneMatch){
+
+        phone = formatPhone(phoneMatch[1]);
+
+    }else{
+
+        let altPhone = clean.match(
+            /Tel\s*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/i
+        );
+
+        if(altPhone){
+
+            phone = `(${altPhone[1]}) ${altPhone[2]}-${altPhone[3]}`;
+        }
+    }
+
+    if(isPhoneOrder){
+
+        let totalMatch = clean.match(/AMOUNT\s+(\d+\.\d{2})/i);
+
+        if(totalMatch){
+            total = totalMatch[1];
+        }
+
+        let deliveryMatch = clean.match(
+            /Delivery.*?\[.*?km.*?\]\s*(\d+\.\d{2})/i
+        );
+
+        if(deliveryMatch){
+            delivery = deliveryMatch[1];
+        }
+
+        let kmMatch = clean.match(/\[(\d+)\s*km\]/i);
+
+        if(kmMatch){
+            km = parseFloat(kmMatch[1]);
+        }
+
+        let addressMatch = clean.match(
+            /Tel#?\d{10}\s*(.*?)\s*Dragon Fort Restaurant/i
+        );
+
+        if(addressMatch){
+
+            address = addressMatch[1].trim();
+
+            if(!address.includes('BC')){
+                address += ', Abbotsford, BC';
+            }
+        }
+
+    }
+
+    if(isOnlineOrder){
+
+        let totalMatch = clean.match(
+            /Order Total\s*\$?(\d+\.\d{2})/i
+        );
+
+        if(totalMatch){
+            total = totalMatch[1];
+        }
+
+        let deliveryMatch = clean.match(
+            /Delivery Fee\s*\(([\d.]+)km\)\s*\$?(\d+\.\d{2})/i
+        );
+
+        if(deliveryMatch){
+
+            km = parseFloat(deliveryMatch[1]);
+            delivery = deliveryMatch[2];
+        }
+
+        let addressMatch = clean.match(
+            /Addr\.\s*(.*?)\s*[A-Z]\d[A-Z]\d[A-Z]\d/i
+        );
+
+        if(addressMatch){
+            address = addressMatch[1].trim();
+        }
+
+    }
+
+    document.getElementById('phone').value = phone;
+    document.getElementById('address').value = address;
+    document.getElementById('total').value = total;
+    document.getElementById('delivery').value = delivery;
+    document.getElementById('minutes').value = estimateMinutes(km);
+}
+
+function formatPhone(num){
+
+    return `(${num.slice(0,3)}) ${num.slice(3,6)}-${num.slice(6)}`;
+}
+
+function generateMessage(){
+
+    const total = document.getElementById('total').value;
+    const delivery = document.getElementById('delivery').value;
+    const minutes = document.getElementById('minutes').value;
+
+    const msg =
+`Hi, this is Stone, your delivery driver from Dragon Fort.
+
+Your order has just left the restaurant and should arrive in about ${minutes} minutes.
+
+Total: $${total} (including delivery fee $${delivery}).
+
+If you have any questions about your order, please contact the restaurant at 604-852-6891.
+
+Thank you, and see you soon!`;
+
+    document.getElementById('message').value = msg;
+}
+
+function copyAddress(){
+
+    const address = document.getElementById('address').value;
+
+    navigator.clipboard.writeText(address);
+
+    alert('Address copied.');
+}
+
+function navigateAddress(){
+
+    const address = document.getElementById('address').value;
+
+    const url =
+        `http://maps.apple.com/?daddr=${encodeURIComponent(address)}`;
+
+    window.open(url, '_blank');
+}
+
+function resetForm(){
+
+    document.getElementById('phone').value = '';
+    document.getElementById('address').value = '';
+    document.getElementById('total').value = '';
+    document.getElementById('delivery').value = '';
+    document.getElementById('minutes').value = '15';
+    document.getElementById('message').value = '';
+
+    document.getElementById('cameraInput').value = '';
+    document.getElementById('uploadInput').value = '';
+
+    preview.style.display = 'none';
+
+    statusText.innerText = '';
+}
+
+function sendSMS(){
+
+    const phone = document.getElementById('phone')
+        .value
+        .replace(/\D/g,'');
+
+    const message = document.getElementById('message').value;
+
+    if(!phone){
+        alert('Phone number missing.');
+        return;
+    }
+
+    if(!message){
+        alert('Please generate the message first.');
+        return;
+    }
+
+    const smsURL =
+        `sms:${phone}&body=${encodeURIComponent(message)}`;
+
+    window.location.href = smsURL;
+}
+
+</script>
+
+</body>
+</html>
