@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stone Delivery SMS Tool v2.0</title>
+<title>Stone Delivery SMS v2.0</title>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
@@ -25,32 +25,32 @@ body{
     box-shadow:0 4px 20px rgba(0,0,0,0.1);
 }
 
-.logo{
-    width:90px;
-    height:90px;
-    margin:0 auto 15px;
-    border-radius:50%;
-    background:black;
-    color:white;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:30px;
-    font-weight:bold;
+.brand{
+    margin-bottom:25px;
+    line-height:0.9;
 }
 
-h1{
-    text-align:center;
-    margin:0;
-    font-size:28px;
+.brand-light{
+    font-size:52px;
+    font-weight:200;
+    letter-spacing:-2px;
+}
+
+.brand-bold{
+    font-size:58px;
+    font-weight:800;
+    letter-spacing:-2px;
+    display:flex;
+    align-items:flex-end;
+    gap:10px;
 }
 
 .version{
-    text-align:center;
-    color:#777;
-    margin-top:6px;
-    margin-bottom:25px;
-    font-size:15px;
+    font-size:14px;
+    color:#999;
+    font-weight:400;
+    margin-bottom:8px;
+    letter-spacing:1px;
 }
 
 .button-row{
@@ -120,15 +120,29 @@ textarea{
 
 <div class="container">
 
-<div class="logo">SDS</div>
+<div class="brand">
 
-<h1>Stone Delivery SMS Tool</h1>
+<div class="brand-light">
+Stone
+</div>
 
-<div class="version">Version 2.0</div>
+<div class="brand-light">
+Delivery
+</div>
+
+<div class="brand-bold">
+SMS
+<span class="version">
+Version 2.0
+</span>
+</div>
+
+</div>
 
 <label>Order Photo</label>
 
 <div class="button-row">
+
 <button onclick="document.getElementById('cameraInput').click()">
 Scan Order
 </button>
@@ -140,6 +154,7 @@ Upload Photo
 <button onclick="resetForm()">
 Reset
 </button>
+
 </div>
 
 <input
@@ -226,10 +241,7 @@ document.getElementById('status');
 
 function openPhotoLibrary(){
 
-    const input =
-    document.getElementById('uploadInput');
-
-    input.click();
+    document.getElementById('uploadInput').click();
 }
 
 [
@@ -468,8 +480,14 @@ function copyAddress(){
 
     navigator.clipboard.writeText(address);
 
-    document.getElementById('copyBtn').innerText=
-    'Address Copied';
+    const btn=
+    document.getElementById('copyBtn');
+
+    btn.innerText='Address Copied';
+
+    setTimeout(()=>{
+        btn.innerText='Copy Address';
+    },2000);
 }
 
 function navigateAddress(){
