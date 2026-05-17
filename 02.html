@@ -232,41 +232,60 @@ function parseOrder(text){
     const isPhoneOrder = clean.includes('AMOUNT');
     const isOnlineOrder = clean.includes('Order Total');
 
-    let phoneMatch = clean.match(/Tel#?\s*(\d{10})/i);
+    // =========================
+    // PHONE EXTRACTION
+    // =========================
 
-    if(phoneMatch){
+    let onlinePhoneMatch = clean.match(
+        /Tel\s*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})/i
+    );
 
-        phone = formatPhone(phoneMatch[1]);
+    if(onlinePhoneMatch){
+
+        phone =
+            `(${onlinePhoneMatch[1]}) ${onlinePhoneMatch[2]}-${onlinePhoneMatch[3]}`;
 
     }else{
 
-        let altPhone = clean.match(
-            /Tel\s*\(?(\\d{3})\)?[-.\s]?(\\d{3})[-.\s]?(\\d{4})/i
+        let phoneMatch = clean.match(
+            /Tel#?\s*(\d{10})/i
         );
 
-        if(altPhone){
+        if(phoneMatch){
 
-            phone = `(${altPhone[1]}) ${altPhone[2]}-${altPhone[3]}`;
+            phone = formatPhone(phoneMatch[1]);
         }
     }
 
+    // =========================
+    // PHONE ORDER
+    // =========================
+
     if(isPhoneOrder){
 
-        let totalMatch = clean.match(/AMOUNT\s+(\d+\.\d{2})/i);
+        let totalMatch = clean.match(
+            /AMOUNT\s+(\d+\.\d{2})/i
+        );
 
         if(totalMatch){
             total = totalMatch[1];
         }
 
+        // FIXED DELIVERY FEE
+        // Example:
+        // Delivery 1-12 [10 km] 12.75
+
         let deliveryMatch = clean.match(
-            /Delivery.*?\[.*?km.*?\]\s*(\d+\.\d{2})/i
+            /\[\s*\d+\s*km\s*\]\s*(\d+\.\d{2})/i
         );
 
         if(deliveryMatch){
             delivery = deliveryMatch[1];
         }
 
-        let kmMatch = clean.match(/\[(\d+)\s*km\]/i);
+        let kmMatch = clean.match(
+            /\[(\d+)\s*km\]/i
+        );
 
         if(kmMatch){
             km = parseFloat(kmMatch[1]);
@@ -287,6 +306,10 @@ function parseOrder(text){
 
     }
 
+    // =========================
+    // ONLINE ORDER
+    // =========================
+
     if(isOnlineOrder){
 
         let totalMatch = clean.match(
@@ -304,6 +327,7 @@ function parseOrder(text){
         if(deliveryMatch){
 
             km = parseFloat(deliveryMatch[1]);
+
             delivery = deliveryMatch[2];
         }
 
