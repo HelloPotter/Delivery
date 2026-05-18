@@ -211,11 +211,16 @@ Navigate
 <label>Delivery Fee</label>
 <input type="text" id="delivery">
 
-<label class="red">
+<label>
 Estimated Arrival Time (minutes)
 </label>
 
-<input type="text" id="minutes" value="15">
+<div style="display:flex;gap:10px;align-items:center;">
+<input type="text" id="minutes" style="flex:1;">
+<button type="button" onclick="increaseMinute()" style="width:120px;flex:none;">
++ 1 min
+</button>
+</div>
 
 <button
 style="width:100%;margin-top:20px;"
@@ -226,7 +231,20 @@ Generate Message
 
 <label>Generated Message</label>
 
-<textarea id="message"></textarea>
+<div
+id="message"
+contenteditable="true"
+style="
+min-height:220px;
+border:1px solid #ccc;
+border-radius:6px;
+padding:14px;
+font-size:20px;
+font-weight:bold;
+line-height:1.5;
+white-space:pre-wrap;
+">
+</div>
 
 <button
 style="width:100%;margin-top:15px;"
@@ -454,6 +472,20 @@ function formatPhone(num){
     return `(${num.slice(0,3)}) ${num.slice(3,6)}-${num.slice(6)}`;
 }
 
+
+function increaseMinute(){
+
+    const input=
+    document.getElementById('minutes');
+
+    let value=
+    parseInt(input.value)||0;
+
+    value++;
+
+    input.value=value;
+}
+
 function generateMessage(){
 
     const total=
@@ -468,15 +500,15 @@ function generateMessage(){
     const msg=
 `Hi, this is Stone, your delivery driver from Dragon Fort.
 
-Your order has just left the restaurant and should arrive in about ${minutes} minutes.
+Your order has just left the restaurant and should arrive in about <span style="color:red;">${minutes}</span> minutes.
 
-Total: $${total} (including delivery fee $${delivery}).
+Total: $<span style="color:red;">${total}</span> (including delivery fee $<span style="color:red;">${delivery}</span>).
 
 If you have any questions about your order, please contact the restaurant at 604-852-6891.
 
 Thank you, and see you soon!`;
 
-    document.getElementById('message').value=msg;
+    document.getElementById('message').innerHTML=msg;
 }
 
 function copyAddress(){
@@ -515,7 +547,9 @@ function resetForm(){
         document.getElementById(id).value='';
     });
 
-    document.getElementById('minutes').value='15';
+    document.getElementById('minutes').value='';
+
+    document.getElementById('message').innerHTML='';
 
     document.getElementById('copyBtn').innerText=
     'Copy Address';
@@ -533,7 +567,7 @@ function sendSMS(){
     .replace(/\D/g,'');
 
     const message=
-    document.getElementById('message').value;
+    document.getElementById('message').innerText;
 
     if(!phone || !message)return;
 
